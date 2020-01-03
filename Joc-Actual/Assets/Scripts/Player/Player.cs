@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private Rigidbody rg;
     [Header("speeds")]
     public float MovementSpeed;
     private float speed;
@@ -14,24 +15,30 @@ public class Player : MonoBehaviour
     public Weapon currentWeapon;
     private float currentShot = 0;
     [Header("Building")]
-    public GameObject currentBuilding;
+    public Building currentBuilding;
+    private void Start()
+    {
+        rg = GetComponent<Rigidbody>();
+    }
 
     // Update is called once per frame
+    void FixedUpdate()
+    {
+        Rotate();
+        Move();
+    }
     void Update()
     {
-        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Rotate(point);
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            Build(point);
-        }
-        Move();
+
         CheckFirerate();
-
-
+        if (Input.GetKeyDown(KeyCode.Tab) && currentBuilding != null)
+        {
+            Build();
+        }
     }
-    public void Move()
+    void Move()
     {
+
         speed = MovementSpeed;
         //speed modifier if the player has a weapon
         if (currentWeapon != null)
@@ -42,13 +49,13 @@ public class Player : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
         //moving the player
-        transform.Translate(new Vector3(h, 0, v) * speed * Time.deltaTime, Space.World);
+        rg.MovePosition(transform.position + new Vector3(h, 0, v) * speed * Time.fixedDeltaTime);
     }
-    void Rotate(Ray point)
+    void Rotate()
     {
         //making a ray from cam to the ground 
         RaycastHit hit;
-
+        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(point, out hit, 50, GroundLayer)) //50 is max units
         {
@@ -59,13 +66,14 @@ public class Player : MonoBehaviour
             //making the new rotation
             Quaternion desiredRot = Quaternion.LookRotation(Dir);
             //applying it
-            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed);
+            rg.MoveRotation(Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed));
         }
 
 
     }
-    void Build(Ray point)
+    void Build()
     {
+        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.Log("Builds");
     }
     void CheckFirerate()
