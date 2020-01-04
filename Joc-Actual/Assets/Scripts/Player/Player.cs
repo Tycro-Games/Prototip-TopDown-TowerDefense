@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private Rigidbody rg;
+
     [Header("speeds")]
     public float MovementSpeed;
     private float speed;
@@ -16,20 +16,14 @@ public class Player : MonoBehaviour
     private float currentShot = 0;
     [Header("Building")]
     public Building currentBuilding;
-    private void Start()
-    {
-        rg = GetComponent<Rigidbody>();
-    }
+
 
     // Update is called once per frame
-    void FixedUpdate()
+
+    void Update()
     {
         Rotate();
         Move();
-    }
-    void Update()
-    {
-
         CheckFirerate();
         if (Input.GetKeyDown(KeyCode.Tab) && currentBuilding != null)
         {
@@ -49,7 +43,7 @@ public class Player : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
         //moving the player
-        rg.MovePosition(transform.position + new Vector3(h, 0, v) * speed * Time.fixedDeltaTime);
+        transform.Translate(new Vector3(h, 0, v) * speed * Time.deltaTime, Space.World);
     }
     void Rotate()
     {
@@ -66,7 +60,7 @@ public class Player : MonoBehaviour
             //making the new rotation
             Quaternion desiredRot = Quaternion.LookRotation(Dir);
             //applying it
-            rg.MoveRotation(Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed));
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed);
         }
 
 
