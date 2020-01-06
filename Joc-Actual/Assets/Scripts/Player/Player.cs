@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-
+    public Transform FollowMouse;
+    [Header("Health")]
+    public int maxHealth;
+    private int currentHealth;
+    public float DamageDelay = .5f;
+    public static bool atacked = false;
     [Header("speeds")]
     public float MovementSpeed;
     private float speed;
@@ -16,21 +21,47 @@ public class Player : MonoBehaviour
     private float currentShot = 0;
     [Header("Building")]
     public Building currentBuilding;
+    Rigidbody rb;
+    Vector3 direction;
 
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody>();
 
-    // Update is called once per frame
+        currentHealth = maxHealth;
+    }
+    private void OnEnable()
+    {
+        Enemy.damageTake += DamageTake;
+    }
+    private void OnDisable()
+    {
+        Enemy.damageTake -= DamageTake;
+    }
+    IEnumerator DamageTake(int dg)
+    {
+        atacked = true;
+        yield return new WaitForSeconds(DamageDelay);//can't be hit in this interval
+        atacked = false;
 
+    }
     void Update()
     {
-        Rotate();
-        Move();
+
+
         CheckFirerate();
         if (Input.GetKeyDown(KeyCode.Tab) && currentBuilding != null)
         {
             Build();
         }
     }
-    void Move()
+    private void FixedUpdate()
+    {
+        Rotate();
+        direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
+        Move(direction);
+    }
+    void Move(Vector3 dir)
     {
 
         speed = MovementSpeed;
@@ -39,11 +70,8 @@ public class Player : MonoBehaviour
         {
             speed -= currentWeapon.Weight;
         }
-        //Getting the input
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
         //moving the player
-        transform.Translate(new Vector3(h, 0, v) * speed * Time.deltaTime, Space.World);
+        rb.MovePosition(rb.position + dir.normalized * speed * Time.deltaTime);
     }
     void Rotate()
     {
@@ -60,10 +88,10 @@ public class Player : MonoBehaviour
             //making the new rotation
             Quaternion desiredRot = Quaternion.LookRotation(Dir);
             //applying it
-            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed);
+            rb.MoveRotation(Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed));
+
+            FollowMouse.position = hit.point;
         }
-
-
     }
     void Build()
     {
