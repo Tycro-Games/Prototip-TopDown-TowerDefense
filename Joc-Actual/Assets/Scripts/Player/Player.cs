@@ -15,14 +15,18 @@ public class Player : MonoBehaviour
     private float speed;
     public float RotationSpeed;
     public LayerMask GroundLayer;
+    Rigidbody rb;
+    Vector3 direction;
     [Header("PlayerShooting")]
     public Transform ShootingPosition;
     public Weapon currentWeapon;
     private float currentShot = 0;
     [Header("Building")]
+    public LayerMask BuildingLayer;
     public Building currentBuilding;
-    Rigidbody rb;
-    Vector3 direction;
+    GameObject buildingToPlace;
+    bool building = false;
+
 
     private void Start()
     {
@@ -52,12 +56,31 @@ public class Player : MonoBehaviour
         CheckFirerate();
         if (Input.GetKeyDown(KeyCode.Tab) && currentBuilding != null)
         {
-            Build();
+            building = !building;
+            if (building)
+            {
+                Unbuild();
+                Build();
+            }
+            else
+            {
+                Unbuild();
+            }
+
+
+
         }
+
+
     }
     private void FixedUpdate()
     {
+        if (building && buildingToPlace != null)
+        {
+            PlacingTower(buildingToPlace);
+        }
         Rotate();
+
         direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
         Move(direction);
     }
@@ -93,11 +116,6 @@ public class Player : MonoBehaviour
             FollowMouse.position = hit.point;
         }
     }
-    void Build()
-    {
-        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.Log("Builds");
-    }
     void CheckFirerate()
     {
         //firerate
@@ -114,4 +132,28 @@ public class Player : MonoBehaviour
     {
         GameObject projectile = Instantiate(currentWeapon.projectile, ShootingPosition.position, transform.rotation);
     }
+    void Unbuild()
+    {
+        Destroy(buildingToPlace);
+    }
+    void Build()
+    {
+        RaycastHit hit;
+        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(point, out hit, 50, BuildingLayer)) //50 is max units
+        {
+            buildingToPlace = Instantiate(currentBuilding.building, hit.point, Quaternion.identity);
+        }
+    }
+    void PlacingTower(GameObject ToPlace)
+    {
+        RaycastHit hit;
+        Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(point, out hit, 50, BuildingLayer)) //50 is max units
+        {
+            ToPlace.transform.position = hit.point;
+
+        }
+    }
+
 }
