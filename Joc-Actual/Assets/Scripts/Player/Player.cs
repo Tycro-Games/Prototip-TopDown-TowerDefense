@@ -22,11 +22,12 @@ public class Player : MonoBehaviour
     public Weapon currentWeapon;
     private float currentShot = 0;
     [Header("Building")]
+    public float MaxRangeToPlace = 10;
     public LayerMask BuildingLayer;
     public Building currentBuilding;
     GameObject buildingToPlace;
     bool building = false;
-
+    SpaceChecker spaceChecker;
 
     private void Start()
     {
@@ -52,37 +53,32 @@ public class Player : MonoBehaviour
     void Update()
     {
 
-
-        CheckFirerate();
+        if (!building)
+        {
+            CheckFirerate();
+        }
         if (Input.GetKeyDown(KeyCode.Tab) && currentBuilding != null)
         {
             building = !building;
+            Unbuild();
             if (building)
             {
-                Unbuild();
                 Build();
             }
-            else
-            {
-                Unbuild();
-            }
-
-
-
         }
-
-
     }
     private void FixedUpdate()
     {
-        if (building && buildingToPlace != null)
+        if (building)
         {
             PlacingTower(buildingToPlace);
         }
-        Rotate();
-
-        direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
-        Move(direction);
+        else
+        {
+            Rotate();
+            direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
+            Move(direction);
+        }
     }
     void Move(Vector3 dir)
     {
@@ -143,16 +139,34 @@ public class Player : MonoBehaviour
         if (Physics.Raycast(point, out hit, 50, BuildingLayer)) //50 is max units
         {
             buildingToPlace = Instantiate(currentBuilding.building, hit.point, Quaternion.identity);
+            spaceChecker = buildingToPlace.GetComponentInChildren<SpaceChecker>();
         }
     }
     void PlacingTower(GameObject ToPlace)
     {
         RaycastHit hit;
         Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
+        //move it
         if (Physics.Raycast(point, out hit, 50, BuildingLayer)) //50 is max units
         {
             ToPlace.transform.position = hit.point;
+        }
+        if (Vector3.Distance(ToPlace.transform.position, transform.position) > MaxRangeToPlace)
+        {
+            spaceChecker.inRange = false;
+        }
+        else
+        {
+            spaceChecker.inRange = true;
+        }
+        //place if you press left click
+        if (Input.GetMouseButtonDown(0) && spaceChecker.canPlace && spaceChecker.inRange)
+        {
 
+            buildingToPlace = null;
+            //some trigger to actually build the tower from space checker
+            //some check for available towers
+            Build();
         }
     }
 
