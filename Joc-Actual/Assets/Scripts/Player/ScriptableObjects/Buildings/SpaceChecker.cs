@@ -41,5 +41,13 @@ public class SpaceChecker : MonoBehaviour
             render.material.SetColor("_BaseColor", CanNotPlaceColor);
         }
     }
+    public void Place(Material mat)
+    {
+        render.material = mat;
+        gameObject.AddComponent<BoxCollider>();
+        StaticEventToBuild.BuildNavMesh();
+        //activate the script for this tower
+        Destroy(this);
+    }
 
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.AI;
 public class Player : MonoBehaviour
 {
     public Transform FollowMouse;
@@ -162,10 +162,11 @@ public class Player : MonoBehaviour
         //place if you press left click
         if (Input.GetMouseButtonDown(0) && spaceChecker.canPlace && spaceChecker.inRange)
         {
-
-            buildingToPlace = null;
             //some trigger to actually build the tower from space checker
+            spaceChecker.Place(currentBuilding.material);
             //some check for available towers
+            //if you can place them then continue
+            buildingToPlace = null;
             Build();
         }
     }

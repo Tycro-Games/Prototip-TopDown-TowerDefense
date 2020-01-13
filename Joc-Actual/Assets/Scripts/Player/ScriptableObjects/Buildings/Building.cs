@@ -5,4 +5,5 @@ using UnityEngine;
 public class Building : ScriptableObject
 {
     public GameObject building;
+    public Material material;
 }
