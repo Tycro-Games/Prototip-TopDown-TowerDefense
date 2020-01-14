@@ -8,15 +8,16 @@ public class Enemy : MonoBehaviour
     public int damage;
     public float rangeToHit = 2f;
     public float timeAnimation;
+    public int damageToObjective = 1;
     NavMeshAgent agent;
-    Transform player;
+    Transform Objective;
     public delegate IEnumerator OnDamageTake(int damage);
     public static event OnDamageTake damageTake;
-    private Coroutine atack;
+    private Coroutine atack = null;
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        Objective = GameObject.FindGameObjectWithTag("Finish").transform;
     }
     public void TakeDamage(int damage)
     {
@@ -26,10 +27,17 @@ public class Enemy : MonoBehaviour
     }
     void Update()
     {
-        agent.destination = player.position;
-        if (Vector3.Distance(transform.position, player.position) <= rangeToHit && atack == null)
+
+        agent.SetDestination(Objective.position);
+
+        if (Vector3.Distance(transform.position, Objective.position) <= agent.stoppingDistance && Objective.tag == "Finish")
         {
-            atack = StartCoroutine(Atack(damage));//player in range
+            HealthCount.TakeEnemies(damageToObjective);
+            Destroy(gameObject);
+        }
+        if (Vector3.Distance(transform.position, Objective.position) <= agent.stoppingDistance && Objective.tag == "Player" && atack == null)
+        {
+            atack = StartCoroutine(Atack(damage));
         }
     }
     void Die()
