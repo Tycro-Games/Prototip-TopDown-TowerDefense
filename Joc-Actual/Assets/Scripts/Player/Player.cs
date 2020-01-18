@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-public class Player : MonoBehaviour
+public class Player : LivingEntity
 {
     public Transform FollowMouse;
-    [Header("Health")]
-    public int maxHealth;
-    private int currentHealth;
+
     public float DamageDelay = .5f;
     public static bool atacked = false;
     [Header("speeds")]
@@ -29,11 +27,10 @@ public class Player : MonoBehaviour
     bool building = false;
     SpaceChecker spaceChecker;
 
-    private void Start()
+    public override void Start()
     {
+        base.Start();
         rb = GetComponent<Rigidbody>();
-
-        currentHealth = maxHealth;
     }
     private void OnEnable()
     {
@@ -45,14 +42,17 @@ public class Player : MonoBehaviour
     }
     IEnumerator DamageTake(int dg)
     {
+
         atacked = true;
         yield return new WaitForSeconds(DamageDelay);//can't be hit in this interval
+        TakeHit(dg);
         atacked = false;
 
     }
     void Update()
     {
-
+        direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
+        Rotate();
         if (!building)
         {
             CheckFirerate();
@@ -75,9 +75,9 @@ public class Player : MonoBehaviour
         }
         else
         {
-            Rotate();
-            direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));//movement
+
             Move(direction);
+
         }
     }
     void Move(Vector3 dir)
@@ -90,7 +90,7 @@ public class Player : MonoBehaviour
             speed -= currentWeapon.Weight;
         }
         //moving the player
-        rb.MovePosition(rb.position + dir.normalized * speed * Time.deltaTime);
+        rb.MovePosition(rb.position + dir.normalized * speed * Time.fixedDeltaTime);
     }
     void Rotate()
     {
@@ -101,13 +101,13 @@ public class Player : MonoBehaviour
         if (Physics.Raycast(point, out hit, 50, GroundLayer)) //50 is max units
         {
             //rotating to face the hit point
-            Vector3 Dir = hit.point - transform.position;
+            Vector3 Dir = hit.point;
             //ensuring that the point is not in other place than 0
-            Dir.y = 0;
+            Dir.y = transform.position.y;
             //making the new rotation
-            Quaternion desiredRot = Quaternion.LookRotation(Dir);
             //applying it
-            rb.MoveRotation(Quaternion.Slerp(transform.rotation, desiredRot, Time.deltaTime * RotationSpeed));
+
+            transform.LookAt(Dir);
 
             FollowMouse.position = hit.point;
         }
@@ -169,6 +169,12 @@ public class Player : MonoBehaviour
             buildingToPlace = null;
             Build();
         }
+    }
+    public override void Die()
+    {
+        Application.Quit();
+        base.Die();
+
     }
 
 }

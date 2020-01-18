@@ -12,7 +12,7 @@ public class HealthCount : MonoBehaviour
     {
         RemainingHpoints = startingHealth;
     }
-    public static void TakeEnemies(int damage)
+    public static void TakeObjectiveDamage(int damage)
     {
         RemainingHpoints -= damage;
     }
