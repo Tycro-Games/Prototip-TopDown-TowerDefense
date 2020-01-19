@@ -90,6 +90,7 @@ public class Player : LivingEntity
             speed -= currentWeapon.Weight;
         }
         //moving the player
+
         rb.MovePosition(rb.position + dir.normalized * speed * Time.fixedDeltaTime);
     }
     void Rotate()
