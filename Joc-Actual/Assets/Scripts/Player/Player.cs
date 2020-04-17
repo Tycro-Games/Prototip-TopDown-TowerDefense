@@ -66,19 +66,16 @@ public class Player : LivingEntity
                 Build();
             }
         }
+        if(building)
+            PlacingTower (buildingToPlace);
     }
     private void FixedUpdate()
     {
-        if (building)
-        {
-            PlacingTower(buildingToPlace);
-        }
-        else
-        {
+
 
             Move(direction);
 
-        }
+        
     }
     void Move(Vector3 dir)
     {
@@ -142,16 +139,18 @@ public class Player : LivingEntity
             buildingToPlace = Instantiate(currentBuilding.building, hit.point, Quaternion.identity);
             spaceChecker = buildingToPlace.GetComponentInChildren<SpaceChecker>();
         }
+        
     }
     void PlacingTower(GameObject ToPlace)
     {
         RaycastHit hit;
         Ray point = Camera.main.ScreenPointToRay(Input.mousePosition);
         //move it
-        if (Physics.Raycast(point, out hit, 50, BuildingLayer)) //50 is max units
+        if (Physics.Raycast(point, out hit, 1000, BuildingLayer)) //50 is max units
         {
             ToPlace.transform.position = hit.point;
         }
+        
         if (Vector3.Distance(ToPlace.transform.position, transform.position) > MaxRangeToPlace)
         {
             spaceChecker.inRange = false;
